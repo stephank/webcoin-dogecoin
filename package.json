@@ -23,8 +23,7 @@
     "bn.js": "^4.11.8",
     "buffer-reverse": "^1.0.1",
     "nan": "^2.8.0",
-    "varuint-bitcoin": "^1.0.4",
-    "webcoin-params": "^1.0.4"
+    "varuint-bitcoin": "^1.0.4"
   },
   "devDependencies": {
     "level": "^2.1.1",

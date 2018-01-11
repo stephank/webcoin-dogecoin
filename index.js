@@ -1,6 +1,5 @@
 const u = require('bitcoin-util')
 const BN = require('bn.js')
-const createParams = require('webcoin-params')
 const DogeBlock = require('./block')
 
 class Consensus {
@@ -79,7 +78,7 @@ const calculateTarget = (height, consensus, startBlock, endBlock) => {
   return target.toBuffer('be', 32)
 }
 
-const params = createParams({
+const params = {
   net: {
     magic: 0xc0c0c0c0,
     defaultPort: 22556,
@@ -142,38 +141,37 @@ const params = createParams({
       timestamp: 1386325540,
       bits: 0x1e0ffff0,
       nonce: 99943
-    }
+    },
+
+    checkpoints: [
+      {
+        height: 144999,
+        header: {
+          version: 2,
+          prevHash: u.toHash('2e910459e9ec3062e7b4e2cfb569c579b43254da53cdd98da671d4ecdeb6a018'),
+          merkleRoot: u.toHash('d0279ba883ca04d216735dcf2978beafeaae852ddf8b7ecf7881c9a29091b74f'),
+          timestamp: 1395094427,
+          bits: 0x1b499dfd,
+          nonce: 3341239808
+        }
+      },
+      {
+        height: 145000,
+        header: {
+          version: 2,
+          prevHash: u.toHash('919a380db4b45eb97abb131633d87ff690387ebe03ac76690da3f4d681400558'),
+          merkleRoot: u.toHash('316614dcd65aa75888cfe1ebb2190740bd8d1fc3e30a0c1952062740b1419c33'),
+          timestamp: 1395094679,
+          bits: 0x1b499dfd,
+          nonce: 1200826624
+        }
+      }
+    ]
   },
 
   wallet: require('bitcoinjs-lib').networks.dogecoin
-})
+}
 
-// These are trashed by `createParams`, so do them here.
 params.blockchain.Block = params.net.Block = params.Block = DogeBlock
-
-params.blockchain.checkpoints = [
-  {
-    height: 144999,
-    header: {
-      version: 2,
-      prevHash: u.toHash('2e910459e9ec3062e7b4e2cfb569c579b43254da53cdd98da671d4ecdeb6a018'),
-      merkleRoot: u.toHash('d0279ba883ca04d216735dcf2978beafeaae852ddf8b7ecf7881c9a29091b74f'),
-      timestamp: 1395094427,
-      bits: 0x1b499dfd,
-      nonce: 3341239808
-    }
-  },
-  {
-    height: 145000,
-    header: {
-      version: 2,
-      prevHash: u.toHash('919a380db4b45eb97abb131633d87ff690387ebe03ac76690da3f4d681400558'),
-      merkleRoot: u.toHash('316614dcd65aa75888cfe1ebb2190740bd8d1fc3e30a0c1952062740b1419c33'),
-      timestamp: 1395094679,
-      bits: 0x1b499dfd,
-      nonce: 1200826624
-    }
-  }
-]
 
 module.exports = params
