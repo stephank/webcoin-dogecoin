@@ -52,18 +52,18 @@ const calculateTarget = (height, consensus, startBlock, endBlock) => {
   let minTimespan, maxTimespan
   if (consensus.digishield) {
     // Amplitude filter
-    timespan = targetTimespan + Math.floor((timespan - targetTimespan) / 8)
-    minTimespan = targetTimespan - Math.floor(targetTimespan / 4)
-    maxTimespan = targetTimespan + Math.floor(targetTimespan / 2)
+    timespan = targetTimespan + ((timespan - targetTimespan) / 8 | 0)
+    minTimespan = targetTimespan - (targetTimespan / 4 | 0)
+    maxTimespan = targetTimespan + (targetTimespan / 2 | 0)
   } else if (height > 10000) {
-    minTimespan = Math.floor(targetTimespan / 4)
-    maxTimespan = Math.floor(targetTimespan * 4)
+    minTimespan = targetTimespan / 4 | 0
+    maxTimespan = targetTimespan * 4 | 0
   } else if (height > 5000) {
-    minTimespan = Math.floor(targetTimespan / 8)
-    maxTimespan = Math.floor(targetTimespan * 4)
+    minTimespan = targetTimespan / 8 | 0
+    maxTimespan = targetTimespan * 4 | 0
   } else {
-    minTimespan = Math.floor(targetTimespan / 16)
-    maxTimespan = Math.floor(targetTimespan * 4)
+    minTimespan = targetTimespan / 16 | 0
+    maxTimespan = targetTimespan * 4 | 0
   }
   timespan = Math.min(maxTimespan, timespan)
   timespan = Math.max(minTimespan, timespan)
