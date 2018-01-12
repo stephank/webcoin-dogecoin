@@ -1,4 +1,4 @@
-const { Block, Transaction } = require('bitcoinjs-lib')
+const { Block, Transaction, crypto: bcrypto } = require('bitcoinjs-lib')
 const varuint = require('varuint-bitcoin')
 const reverse = require('buffer-reverse')
 const crypto = require('crypto')
@@ -7,7 +7,7 @@ const binding = require('./build/Release/binding.node')
 
 const mergedMiningHeader = Buffer.from([0xfa, 0xbe, 0x6d, 0x6d])
 
-const hashTwo = (buf1, buf2) => {
+const sha1 = (buf1, buf2) => {
   return crypto.createHash('sha1')
     .update(buf1)
     .update(buf2)
@@ -52,14 +52,25 @@ class MerkleBranch {
       this.hashes.length * 32
   }
 
+  toBuffer () {
+    const buffer = Buffer.alloc(this.byteLength())
+    this.toBufferWrap(new BufferWrap(buffer))
+    return buffer
+  }
+
+  toBufferWrap (w) {
+    w.writeList(this.hashes, (w, hash) => w.copy(hash))
+    w.writeInt32(this.sideMask)
+  }
+
   getHash (hash) {
     let m = this.sideMask
     if (m === -1) return null
     for (const node of this.hashes) {
       if (m & 1) {
-        hash = hashTwo(node, hash)
+        hash = sha1(node, hash)
       } else {
-        hash = hashTwo(hash, node)
+        hash = sha1(hash, node)
       }
       m = m >> 1
     }
@@ -85,13 +96,26 @@ class AuxPoW {
     this.blockHash = w.readSlice(32)
     this.coinbaseBranch = MerkleBranch.fromBufferWrap(w)
     this.blockchainBranch = MerkleBranch.fromBufferWrap(w)
-    // Limiting the slice here ensures only headers are parsed.
-    this.parentBlock = DogeBlock.fromBuffer(w.readSlize(80))
+    this.parentBlock = DogeBlock.fromBufferWrap(w, 0)
   }
 
   byteLength () {
     return 112 + this.tx.byteLength() +
       this.coinbaseBranch.byteLength() + this.blockchainBranch.byteLength()
+  }
+
+  toBuffer () {
+    const buffer = Buffer.alloc(this.byteLength())
+    this.toBufferWrap(new BufferWrap(buffer))
+    return buffer
+  }
+
+  toBufferWrap (w) {
+    w.writeObject(this.tx)
+    w.copy(this.blockHash)
+    this.coinbaseBranch.toBufferWrap(w)
+    this.blockchainBranch.toBufferWrap(w)
+    this.parentBlock.toBufferWrap(w, 0)
   }
 
   check (auxBlockHash, chainId) {
@@ -167,42 +191,72 @@ class DogeBlock extends Block {
     this.auxPoW = null
   }
 
-  static fromBuffer (buf) {
-    return DogeBlock.fromBufferWrap(new BufferWrap(buf))
+  /**
+   * Mode can be:
+   *  - 0: Headers only, no AuxPoW
+   *  - 1: Try to parse AuxPoW
+   *  - 2: Try to parse transactions
+   */
+  static fromBuffer (buf, mode) {
+    return DogeBlock.fromBufferWrap(new BufferWrap(buf), mode)
   }
 
-  static fromBufferWrap (w) {
+  static fromBufferWrap (w, mode = 2) {
     const b = new DogeBlock()
-    b.version = w.readInt32()
+    b.version = w.readUInt32()
     b.prevHash = w.readSlice(32)
     b.merkleRoot = w.readSlice(32)
     b.timestamp = w.readUInt32()
     b.bits = w.readUInt32()
     b.nonce = w.readUInt32()
-    if (!w.isEof() && b.isAuxPoW()) {
+    if (mode >= 1 && !w.isEof() && b.isAuxPoW()) {
       b.auxPoW = AuxPoW.fromBufferWrap(w)
     }
-    if (!w.isEof()) {
+    if (mode >= 2 && !w.isEof()) {
       b.transactions = w.readList((w) => w.readType(Transaction, true))
     }
     return b
   }
 
-  static fromHex (hex) {
-    return DogeBlock.fromBuffer(Buffer.from(hex, 'hex'))
+  static fromHex (hex, mode) {
+    return DogeBlock.fromBuffer(Buffer.from(hex, 'hex'), mode)
   }
 
-  // Get the byte size required for encoding this block.
-  byteLength (headersOnly) {
+  byteLength (mode = 2) {
+    if (typeof mode === 'boolean') mode = mode ? 1 : 2  // bitcoinjs-lib compat
+
     let size = 80
-    if (this.isAuxPoW()) {
+    if (mode >= 1 && this.isAuxPoW()) {
       size += this.auxPoW.byteLength()
     }
-    if (!headersOnly && this.transactions) {
+    if (mode >= 2 && this.transactions) {
       size += varuint.encodingLength(this.transactions.length)
       size += this.transactions.reduce((n, tx) => n + tx.byteLength(), 0)
     }
     return size
+  }
+
+  toBuffer (mode) {
+    if (typeof mode === 'boolean') mode = mode ? 1 : 2  // bitcoinjs-lib compat
+
+    const buffer = Buffer.alloc(this.byteLength(mode))
+    this.toBufferWrap(new BufferWrap(buffer), mode)
+    return buffer
+  }
+
+  toBufferWrap (w, mode = 2) {
+    w.writeUInt32(this.version)
+    w.copy(this.prevHash)
+    w.copy(this.merkleRoot)
+    w.writeUInt32(this.timestamp)
+    w.writeUInt32(this.bits)
+    w.writeUInt32(this.nonce)
+    if (mode >= 1 && !w.isEof() && this.isAuxPoW()) {
+      this.auxPoW.toBufferWrap(w)
+    }
+    if (mode >= 2 && !w.isEof()) {
+      w.writeList(this.transactions, (w, tx) => w.writeObject(tx))
+    }
   }
 
   // Extract the version number from the version field.
@@ -226,9 +280,15 @@ class DogeBlock extends Block {
     return version === 1 || (version === 2 && this.getChainId() === 0)
   }
 
+  // Get the hash for this block.
+  // Overridden to ensure we only hash the basic headers, not AuxPoW.
+  getHash () {
+    return bcrypto.hash256(this.toBuffer(0))
+  }
+
   // Get the proof-of-work hash for this block.
   getPoWHash () {
-    return binding.scrypt(this.toBuffer(true))
+    return binding.scrypt(this.toBuffer(0))
   }
 
   // Get the proof-of-work hash used to verify this block.
@@ -248,6 +308,24 @@ class DogeBlock extends Block {
     const target = Block.calculateTarget(this.bits)
 
     return hash.compare(target) <= 0
+  }
+}
+
+// abstract-encoding compatible interface
+const headerType = DogeBlock.headerType = {
+  encode: (obj, buffer, offset) => {
+    const wrap = new BufferWrap(buffer, offset)
+    obj.toBufferWrap(wrap, 1)
+    headerType.encode.bytes = wrap.offset - offset
+  },
+  decode: (buffer, start, end) => {
+    const wrap = new BufferWrap(buffer.slice(start, end))
+    const result = DogeBlock.fromBufferWrap(wrap, 1)
+    headerType.decode.bytes = wrap.offset
+    return result
+  },
+  encodingLength: (obj) => {
+    return obj.byteLength(1)
   }
 }
 

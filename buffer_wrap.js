@@ -1,9 +1,9 @@
 const varuint = require('varuint-bitcoin')
 
 class BufferWrap {
-  constructor (buffer) {
+  constructor (buffer, offset = 0) {
     this.buffer = buffer
-    this.offset = 0
+    this.offset = offset
   }
 
   rest () {
@@ -50,6 +50,37 @@ class BufferWrap {
       list[i] = fn(this)
     }
     return list
+  }
+
+  copy (src, start, end) {
+    this.offset += src.copy(this.buffer, this.offset, start, end)
+  }
+
+  writeUInt32 (i) {
+    this.buffer.writeUInt32LE(i, this.offset)
+    this.offset += 4
+  }
+
+  writeInt32 (i) {
+    this.buffer.writeInt32LE(i, this.offset)
+    this.offset += 4
+  }
+
+  writeVarInt (vi) {
+    varuint.encode(vi, this.buffer, this.offset)
+    this.offset += varuint.encode.bytes
+  }
+
+  writeObject (obj, ...args) {
+    this.copy(obj.toBuffer(...args))
+  }
+
+  writeList (list, fn) {
+    const n = list.length
+    this.writeVarInt(n)
+    for (let i = 0; i < n; i++) {
+      fn(this, list[i])
+    }
   }
 }
 

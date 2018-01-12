@@ -1,5 +1,6 @@
 const u = require('bitcoin-util')
 const BN = require('bn.js')
+const proto = require('bitcoin-protocol')
 const DogeBlock = require('./block')
 
 class Consensus {
@@ -90,7 +91,10 @@ const params = {
       'seed.dogecoin.com',
       'seed.doger.dogecoin.com'
     ],
-    staticPeers: []
+    staticPeers: [],
+    messages: proto.messages.createStructs({
+      header: DogeBlock.headerType
+    })
   },
 
   blockchain: {
@@ -145,25 +149,25 @@ const params = {
 
     checkpoints: [
       {
-        height: 144999,
+        height: 369999,
         header: {
           version: 2,
-          prevHash: u.toHash('2e910459e9ec3062e7b4e2cfb569c579b43254da53cdd98da671d4ecdeb6a018'),
-          merkleRoot: u.toHash('d0279ba883ca04d216735dcf2978beafeaae852ddf8b7ecf7881c9a29091b74f'),
-          timestamp: 1395094427,
-          bits: 0x1b499dfd,
-          nonce: 3341239808
+          prevHash: u.toHash('379e220a378b13d72c433fe6d84e92e369a129d39577e2c28fe33783805d33fc'),
+          merkleRoot: u.toHash('6d9bd51d8dbaf1e98b266806786dbe62b7e5fdae8df99b38a2e500dd53cc43e9'),
+          timestamp: 1410369838,
+          bits: 0x1b2fe802,
+          nonce: 2598044084
         }
       },
       {
-        height: 145000,
+        height: 370000,
         header: {
           version: 2,
-          prevHash: u.toHash('919a380db4b45eb97abb131633d87ff690387ebe03ac76690da3f4d681400558'),
-          merkleRoot: u.toHash('316614dcd65aa75888cfe1ebb2190740bd8d1fc3e30a0c1952062740b1419c33'),
-          timestamp: 1395094679,
-          bits: 0x1b499dfd,
-          nonce: 1200826624
+          prevHash: u.toHash('ddf26f76f20f3c196dd16e4834bf11d522d0092ec4050abad29d47694e42ebf4'),
+          merkleRoot: u.toHash('ae25bd6aa114d5ac667a2eb068d2cb982a1f2d5e4b902c85d5d874f211158695'),
+          timestamp: 1410369882,
+          bits: 0x1b40ac69,
+          nonce: 2767193856
         }
       }
     ]
