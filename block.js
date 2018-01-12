@@ -92,11 +92,13 @@ class AuxPoW {
   }
 
   static fromBufferWrap (w) {
-    this.tx = w.readObject(Transaction, true)
-    this.blockHash = w.read(32)
-    this.coinbaseBranch = MerkleBranch.fromBufferWrap(w)
-    this.blockchainBranch = MerkleBranch.fromBufferWrap(w)
-    this.parentBlock = DogeBlock.fromBufferWrap(w, 0)
+    const a = new AuxPoW()
+    a.tx = w.readObject(Transaction, true)
+    a.blockHash = w.read(32)
+    a.coinbaseBranch = MerkleBranch.fromBufferWrap(w)
+    a.blockchainBranch = MerkleBranch.fromBufferWrap(w)
+    a.parentBlock = DogeBlock.fromBufferWrap(w, 0)
+    return a
   }
 
   byteLength () {
