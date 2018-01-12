@@ -42,7 +42,7 @@ class MerkleBranch {
 
   static fromBufferWrap (w) {
     const b = new MerkleBranch()
-    b.hashes = w.readList((w) => w.readSlice(32))
+    b.hashes = w.readList((w) => w.read(32))
     b.sideMask = w.readInt32()
     return b
   }
@@ -59,7 +59,7 @@ class MerkleBranch {
   }
 
   toBufferWrap (w) {
-    w.writeList(this.hashes, (w, hash) => w.copy(hash))
+    w.writeList(this.hashes, (w, hash) => w.write(hash))
     w.writeInt32(this.sideMask)
   }
 
@@ -92,8 +92,8 @@ class AuxPoW {
   }
 
   static fromBufferWrap (w) {
-    this.tx = w.readType(Transaction, true)
-    this.blockHash = w.readSlice(32)
+    this.tx = w.readObject(Transaction, true)
+    this.blockHash = w.read(32)
     this.coinbaseBranch = MerkleBranch.fromBufferWrap(w)
     this.blockchainBranch = MerkleBranch.fromBufferWrap(w)
     this.parentBlock = DogeBlock.fromBufferWrap(w, 0)
@@ -112,7 +112,7 @@ class AuxPoW {
 
   toBufferWrap (w) {
     w.writeObject(this.tx)
-    w.copy(this.blockHash)
+    w.write(this.blockHash)
     this.coinbaseBranch.toBufferWrap(w)
     this.blockchainBranch.toBufferWrap(w)
     this.parentBlock.toBufferWrap(w, 0)
@@ -204,8 +204,8 @@ class DogeBlock extends Block {
   static fromBufferWrap (w, mode = 2) {
     const b = new DogeBlock()
     b.version = w.readUInt32()
-    b.prevHash = w.readSlice(32)
-    b.merkleRoot = w.readSlice(32)
+    b.prevHash = w.read(32)
+    b.merkleRoot = w.read(32)
     b.timestamp = w.readUInt32()
     b.bits = w.readUInt32()
     b.nonce = w.readUInt32()
@@ -213,7 +213,7 @@ class DogeBlock extends Block {
       b.auxPoW = AuxPoW.fromBufferWrap(w)
     }
     if (mode >= 2 && !w.isEof()) {
-      b.transactions = w.readList((w) => w.readType(Transaction, true))
+      b.transactions = w.readList((w) => w.readObject(Transaction, true))
     }
     return b
   }
@@ -246,8 +246,8 @@ class DogeBlock extends Block {
 
   toBufferWrap (w, mode = 2) {
     w.writeUInt32(this.version)
-    w.copy(this.prevHash)
-    w.copy(this.merkleRoot)
+    w.write(this.prevHash)
+    w.write(this.merkleRoot)
     w.writeUInt32(this.timestamp)
     w.writeUInt32(this.bits)
     w.writeUInt32(this.nonce)

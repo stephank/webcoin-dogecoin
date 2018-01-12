@@ -14,7 +14,7 @@ class BufferWrap {
     return this.offset >= this.buffer.length
   }
 
-  readSlice (n) {
+  read (n) {
     this.offset += n
     return this.buffer.slice(this.offset - n, this.offset)
   }
@@ -37,7 +37,7 @@ class BufferWrap {
     return vi
   }
 
-  readType (type, ...args) {
+  readObject (type, ...args) {
     const inst = type.fromBuffer(this.rest(), ...args)
     this.offset += inst.byteLength()
     return inst
@@ -52,7 +52,7 @@ class BufferWrap {
     return list
   }
 
-  copy (src, start, end) {
+  write (src, start, end) {
     this.offset += src.copy(this.buffer, this.offset, start, end)
   }
 
