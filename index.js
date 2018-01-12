@@ -149,27 +149,39 @@ const params = {
 
     checkpoints: [
       {
-        height: 369999,
+        height: 371335,
         header: {
-          version: 2,
-          prevHash: u.toHash('379e220a378b13d72c433fe6d84e92e369a129d39577e2c28fe33783805d33fc'),
-          merkleRoot: u.toHash('6d9bd51d8dbaf1e98b266806786dbe62b7e5fdae8df99b38a2e500dd53cc43e9'),
-          timestamp: 1410369838,
-          bits: 0x1b2fe802,
-          nonce: 2598044084
+          version: 6422530,
+          prevHash: u.toHash('462265b778f89534532f69dc06168dbe8b9e3e6b972de3e73ddbc960e895d2bf'),
+          merkleRoot: u.toHash('d25b018e261dc189dcbf4fdfc180771135a25b0bd40ec90488a91990ac5d93cb'),
+          timestamp: 1410464445,
+          bits: 0x1b35312d,
+          nonce: 3969999160
         }
       },
       {
-        height: 370000,
+        height: 371336,
         header: {
-          version: 2,
-          prevHash: u.toHash('ddf26f76f20f3c196dd16e4834bf11d522d0092ec4050abad29d47694e42ebf4'),
-          merkleRoot: u.toHash('ae25bd6aa114d5ac667a2eb068d2cb982a1f2d5e4b902c85d5d874f211158695'),
-          timestamp: 1410369882,
-          bits: 0x1b40ac69,
-          nonce: 2767193856
+          version: 6422530,
+          prevHash: u.toHash('8ad58fc406423207bdd82bed27c0c9a22f8241e3d3e8595191decb55a50b20c7'),
+          merkleRoot: u.toHash('a0503bb44fd98e79239cc8f7b896a81b9a5fb1deb74e165173d7a530db34d877'),
+          timestamp: 1410464569,
+          bits: 0x1b2fdf75,
+          nonce: 3401887720
         }
       }
+      // FIXME: Encode an AuxPoW header here, somehow.
+      // {
+      //   height: 371337,
+      //   header: {
+      //     version: 6422786,
+      //     prevHash: u.toHash('46a8b109fb016fa41abd17a19186ca78d39c60c020c71fcd2690320d47036f0d'),
+      //     merkleRoot: u.toHash('ee27b8fb782a5bfb99c975f0d4686440b9af9e16846603e5f2830e0b6fbf158a'),
+      //     timestamp: 1410464577,
+      //     bits: 0x1b364184,
+      //     nonce: 0
+      //   }
+      // }
     ]
   },
 
