@@ -124,10 +124,6 @@ const params = {
     },
 
     miningHash: (header, cb) => {
-      if (!(header instanceof DogeBlock)) {
-        header = Object.assign(new DogeBlock(), header)
-      }
-
       let hash
       try {
         hash = header.getMiningHash(header)

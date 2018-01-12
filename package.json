@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/stephank/webcoin-dogecoin#readme",
   "dependencies": {
+    "bitcoin-net": "git+https://github.com/stephank/bitcoin-net.git#master",
     "bitcoin-util": "^2.0.3",
     "bitcoinjs-lib": "^2.2.0",
     "blockchain-spv": "git+https://github.com/stephank/blockchain-spv.git#2.x",
