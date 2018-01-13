@@ -7,11 +7,13 @@ const binding = require('./build/Release/binding.node')
 
 const mergedMiningHeader = Buffer.from([0xfa, 0xbe, 0x6d, 0x6d])
 
-const twoSha256 = (buf1, buf2) => {
-  return crypto.createHash('sha256')
+// Double SHA256 two buffers concatenated
+const twoHash256 = (buf1, buf2) => {
+  const first = crypto.createHash('sha256')
     .update(buf1)
     .update(buf2)
     .digest()
+  return bcrypto.sha256(first)
 }
 
 const getExpectedIndex = (nonce, chainId, h) => {
@@ -68,9 +70,9 @@ class MerkleBranch {
     if (m === -1) return null
     for (const node of this.hashes) {
       if (m & 1) {
-        hash = twoSha256(node, hash)
+        hash = twoHash256(node, hash)
       } else {
-        hash = twoSha256(hash, node)
+        hash = twoHash256(hash, node)
       }
       m = m >> 1
     }
@@ -135,7 +137,8 @@ class AuxPoW {
     const { script } = this.tx.ins[0]
 
     // Check that the chain merkle root is in the coinbase
-    const rootHash = this.blockchainBranch.getHash(auxBlock.getHash())
+    const auxBlockHash = auxBlock.getHash()
+    const rootHash = reverse(this.blockchainBranch.getHash(auxBlockHash))
     let pc = script.indexOf(rootHash)
     if (pc === -1) {
       throw Error('AuxPoW missing chain merkle root in parent coinbase')
@@ -298,7 +301,7 @@ class DogeBlock extends Block {
   getMiningHash () {
     if (this.isAuxPoW()) {
       this.auxPoW.check(this)
-      return reverse(this.parentBlock.getPoWHash())
+      return reverse(this.auxPoW.parentBlock.getPoWHash())
     } else {
       return reverse(this.getPoWHash())
     }
