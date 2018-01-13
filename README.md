@@ -2,13 +2,13 @@
 
 Experimental [Dogecoin] support for [Webcoin].
 
-Currently very broken.
-
 ```sh
 yarn
-yarn run test
-./example.js
+TEST_ALL=1 yarn run test
 ```
+
+The `update-checkpoints.js` script is used to generate checkpoints from which a
+client may resume. It also serves as a small example.
 
  [Dogecoin]: http://dogecoin.com/
  [Webcoin]: https://github.com/mappum/webcoin
