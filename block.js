@@ -24,10 +24,15 @@ const getExpectedIndex = (nonce, chainId, h) => {
   // same chain while reducing the chance that two chains clash
   // for the same slot.
 
+  // The official client uses an `uint32_t`, which may overflow. The `>>>`
+  // operator is the only unsigned operator in JS, so that is used to truncate
+  // numbers. The original factor `1103515245` is also split up so that the
+  // multiplication never exceeds `MAX_SAFE_INTEGER`.
+
   let rand = nonce
-  rand = rand * 1103515245 + 12345
+  rand = ((rand * 8505 >>> 0) * 129749 >>> 0) + 12345
   rand += chainId
-  rand = rand * 1103515245 + 12345
+  rand = ((rand * 8505 >>> 0) * 129749 >>> 0) + 12345
 
   return rand % (1 << h)
 }
@@ -177,13 +182,13 @@ class AuxPoW {
       throw Error('AuxPoW missing chain merkle tree size and nonce in parent coinbase')
     }
 
-    const size = script.readInt32LE(pc)
+    const size = script.readUInt32LE(pc)
     const merkleHeight = this.blockchainBranch.hashes.length
     if (size !== (1 << merkleHeight)) {
       throw Error('AuxPoW merkle branch size does not match parent coinbase')
     }
 
-    const nonce = script.readInt32LE(pc + 4)
+    const nonce = script.readUInt32LE(pc + 4)
     const expected = getExpectedIndex(nonce, chainId, merkleHeight)
     if (this.blockchainBranch.sideMask !== expected) {
       throw Error('AuxPoW wrong index')

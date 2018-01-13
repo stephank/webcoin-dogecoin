@@ -48,7 +48,8 @@ const calculateTarget = (height, consensus, startBlock, endBlock) => {
   // Actual time taken to complete the interval
   const actualTimespan = endBlock.header.timestamp - startBlock.header.timestamp
 
-  // Clamp timespan
+  // Clamp timespan. The `|0` operation is used to perform integer rounding.
+  // The values are small enough to not touch the sign bit.
   let timespan = actualTimespan
   let minTimespan, maxTimespan
   if (consensus.digishield) {
