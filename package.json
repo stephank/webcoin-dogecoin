@@ -24,6 +24,7 @@
     "bn.js": "^4.11.8",
     "buffer-reverse": "^1.0.1",
     "nan": "^2.8.0",
+    "varstruct": "6",
     "varuint-bitcoin": "^1.0.4"
   },
   "devDependencies": {
