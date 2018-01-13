@@ -29,4 +29,9 @@ node.peers.once('connect', () => {
   })
 })
 
+node.on('synced', (tip) => {
+  console.log(`Sync complete at height ${tip.height}`)
+  process.exit(0)
+})
+
 node.start()
