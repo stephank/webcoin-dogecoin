@@ -2,13 +2,9 @@
 
 const Node = require('webcoin')
 const level = require('level')
-const reverse = require('buffer-reverse')
 const dogecoin = require('.')
 
-const formatBlock = (block) => {
-  const hash = reverse(block.hash).toString('hex')
-  return `${block.height}: ${hash}`
-}
+const formatBlock = (block) => `${block.height}: ${block.header.getId()}`
 
 const db = level('./chain.db')
 const node = new Node(dogecoin, db)
