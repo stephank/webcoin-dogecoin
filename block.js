@@ -7,8 +7,8 @@ const binding = require('./build/Release/binding.node')
 
 const mergedMiningHeader = Buffer.from([0xfa, 0xbe, 0x6d, 0x6d])
 
-const sha1 = (buf1, buf2) => {
-  return crypto.createHash('sha1')
+const twoSha256 = (buf1, buf2) => {
+  return crypto.createHash('sha256')
     .update(buf1)
     .update(buf2)
     .digest()
@@ -68,9 +68,9 @@ class MerkleBranch {
     if (m === -1) return null
     for (const node of this.hashes) {
       if (m & 1) {
-        hash = sha1(node, hash)
+        hash = twoSha256(node, hash)
       } else {
-        hash = sha1(hash, node)
+        hash = twoSha256(hash, node)
       }
       m = m >> 1
     }
@@ -120,11 +120,12 @@ class AuxPoW {
     this.parentBlock.toBufferWrap(w, 0)
   }
 
-  check (auxBlockHash, chainId) {
-    if (this.coinbaseBranch.sideMask === 0) {
+  check (auxBlock) {
+    const chainId = auxBlock.getChainId()
+    if (this.coinbaseBranch.sideMask !== 0) {
       throw Error('AuxPoW is not a generate')
     }
-    if (this.getChainId() === this.parentBlock.getChainId()) {
+    if (this.parentBlock.getChainId() === chainId) {
       throw Error('AuxPoW parent has our chain ID')
     }
     if (this.blockchainBranch.hashes.length > 30) {
@@ -134,7 +135,7 @@ class AuxPoW {
     const { script } = this.tx.ins[0]
 
     // Check that the chain merkle root is in the coinbase
-    const rootHash = this.blockchainBranch.getHash(auxBlockHash)
+    const rootHash = this.blockchainBranch.getHash(auxBlock.getHash())
     let pc = script.indexOf(rootHash)
     if (pc === -1) {
       throw Error('AuxPoW missing chain merkle root in parent coinbase')
@@ -296,8 +297,7 @@ class DogeBlock extends Block {
   // Get the proof-of-work hash used to verify this block.
   getMiningHash () {
     if (this.isAuxPoW()) {
-      const auxBlockHash = reverse(this.getHash())
-      this.auxPoW.check(auxBlockHash, this.getChainId())
+      this.auxPoW.check(this)
       return reverse(this.parentBlock.getPoWHash())
     } else {
       return reverse(this.getPoWHash())

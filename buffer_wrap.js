@@ -72,7 +72,7 @@ class BufferWrap {
   }
 
   writeObject (obj, ...args) {
-    this.copy(obj.toBuffer(...args))
+    this.write(obj.toBuffer(...args))
   }
 
   writeList (list, fn) {
