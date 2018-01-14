@@ -1,6 +1,6 @@
 {
   "name": "webcoin-dogecoin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dogecoin parameters for webcoin",
   "main": "index.js",
   "scripts": {
