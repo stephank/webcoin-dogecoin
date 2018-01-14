@@ -28,10 +28,10 @@
  */
 
 #include "scrypt.h"
+#include "sha256.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <openssl/sha.h>
 
 #include <emmintrin.h>
 
